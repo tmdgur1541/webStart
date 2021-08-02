@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.example.haksaengStatus.service.impl.HaksaengStatusMapper">
+
+	<select id="selectHaksaengStatusServiceList" resultType="egovMap" parameterType="egovMap">
+		SELECT *
+		FROM
+			(SELECT FORMAT((@rownum := @rownum + 1), 0) num
+			      , ur.user_id
+				  , ur.user_nm
+				  , ur.age
+				  , ur.cafe_nick
+				  , ur.phone
+				  , gs.class_nm
+				  , gs.gisu_nm
+				  , gs.jucha_nm
+			FROM   t_user ur
+			JOIN   t_gisu gs
+			ON     ur.user_id = gs.user_id
+			     , (SELECT @rownum := 0) rownum  
+			UNION ALL
+			SELECT FORMAT((@rownum := @rownum + 1), 0) num
+			      , ur.user_id
+				  , ur.user_nm
+				  , ur.age
+				  , ur.cafe_nick
+				  , ur.phone
+				  , '생존전략' class_nm
+				  , '없음' gisu_nm
+				  , '없음' jucha_nm
+			FROM   t_user ur
+			WHERE NOT EXISTS ( SELECT 1
+			                   FROM t_gisu gs
+							   WHERE ur.user_id = gs.user_id )) A
+		<where>
+			<if test="userId != null and userId != ''">
+				A.user_id = #{userId}
+			</if>
+			<if test="userNm != null and userNm != ''">
+				AND A.user_nm = #{userNm}
+			</if>
+			<if test="cafeNick != null and cafeNick != ''">
+				AND A.cafe_nick = #{cafeNick}
+			</if>
+			<if test="classNm != null and classNm != ''">
+				AND A.class_nm = #{classNm}
+			</if>
+		</where>
+	</select>
+	
+	<select id="selectHaksaengStatusChartServiceList" resultType="egovMap">
+		SELECT A.class_nm
+     		 , COUNT(*) cnt
+		FROM ( 
+				SELECT gs.class_nm
+				FROM   t_user ur
+				JOIN   t_gisu gs
+				ON     ur.user_id = gs.user_id
+				     , (SELECT @rownum := 0) rownum
+				UNION ALL
+				SELECT '생존전략' class_nm
+				FROM   t_user ur
+				WHERE NOT EXISTS ( SELECT 1
+				                   FROM t_gisu gs
+								   WHERE ur.user_id = gs.user_id ) ) A
+		GROUP BY A.class_nm
+	</select>
+	
+	<select id="stringParam" parameterType="String" resultType="egovMap">
+		SELECT *
+		FROM
+			(SELECT FORMAT((@rownum := @rownum + 1), 0) num
+			      , ur.user_id
+				  , ur.user_nm
+				  , ur.age
+				  , ur.cafe_nick
+				  , ur.phone
+				  , gs.class_nm
+				  , gs.gisu_nm
+				  , gs.jucha_nm
+			FROM   t_user ur
+			JOIN   t_gisu gs
+			ON     ur.user_id = gs.user_id
+			     , (SELECT @rownum := 0) rownum  
+			UNION ALL
+			SELECT FORMAT((@rownum := @rownum + 1), 0) num
+			      , ur.user_id
+				  , ur.user_nm
+				  , ur.age
+				  , ur.cafe_nick
+				  , ur.phone
+				  , '생존전략' class_nm
+				  , '없음' gisu_nm
+				  , '없음' jucha_nm
+			FROM   t_user ur
+			WHERE NOT EXISTS ( SELECT 1
+			                   FROM t_gisu gs
+							   WHERE ur.user_id = gs.user_id )) A
+		<where>
+			<if test="_parameter != null and _parameter != ''">
+				A.user_nm = #{_parameter}
+			</if>
+		</where>
+	</select>
+	
+	<select id="paramVO" parameterType="haksaengStatusVO" resultType="egovMap">
+		SELECT *
+		FROM 	t_user ur
+		WHERE 	ur.user_id = #{userId}
+		OR 		ur.user_nm = #{userNm}
+		OR 		ur.age = #{age}
+	</select>
+	
+	<select id="selectClassServiceList" resultType="egovMap">
+		SELECT 	 gs.class_nm
+		FROM 	 t_gisu gs
+		GROUP BY gs.class_nm
+		UNION ALL
+		SELECT '생존전략' class_nm
+	</select>
+	
+	<select id="selectMainPartsServiceList" resultType="egovMap">
+		SELECT  tp.parts_cd
+			  , tp.parts_nm
+		FROM 	t_main_parts tp
+	</select>
+	
+	<select id="selectPartsDtlServiceList" parameterType="String" resultType="egovMap">
+		SELECT  mpo.opt_cd
+			  , mpo.opt_nm
+		FROM 	t_main_parts_opt mpo
+		<where>
+			mpo.parts_cd = #{_parameter}
+		</where>
+	</select>
+	
+	<select id="selectNikeClothesServiceList" resultType="egovMap">
+		SELECT nc.clo_no
+		     , nc.clo_nm
+		FROM   t_nike_clothes nc
+	</select>
+	
+	<select id="selectNikeClothesDtlServiceList" parameterType="Integer" resultType="egovMap">
+		SELECT ncdtl.clo_del_nm
+			 , ncdtl.clo_del_no
+		FROM   t_nike_clothes_dtl ncdtl
+		<where>
+			ncdtl.clo_no = #{_parameter}
+		</where>
+	</select>
+</mapper>
